@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +37,23 @@ class HomeScreen extends StatelessWidget {
                   color: Colors.grey.shade900,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Center(child: Text('Map')),
+
+                //using flutter map here
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: LatLng(28.6139, 77.2090), // Delhi for now
+                    initialZoom: 15,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.toetrack',
+                    ),
+                  ],
+                ),
+
+
               ),
             ),
 
