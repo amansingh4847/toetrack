@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,7 +13,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   LatLng? currentLocation; //this can be null so using ?
-  final MapController mapController = MapController(); //to control the camera on map wrt our live location
+  final MapController mapController =
+      MapController(); //to control the camera on map wrt our live location
+
+  StreamSubscription<Position>? positionStream;
+
+  bool isTracking = false;
+
+  List<LatLng> routePoints = [];
+
+  double distanceCovered = 0.0;
 
   //func banaya to get curr loc everytime the app open or screen get loaded
   Future<void> getCurrentLocation() async {
@@ -29,13 +39,48 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       currentLocation = LatLng(position.latitude, position.longitude);
     });
-    mapController.move(currentLocation!, 16, );
+    mapController.move(currentLocation!, 16);
   }
 
   @override
   void initState() {
     super.initState();
     getCurrentLocation();
+  }
+
+  //trackking start krne ka function
+  void startTracking() {
+    setState(() {
+      isTracking = true;
+    });
+
+    LocationSettings locationSettings = const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5,
+    );
+
+    positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) {
+            LatLng newPoint = LatLng(position.latitude, position.longitude);
+
+            setState(() {
+              currentLocation = newPoint;
+              routePoints.add(newPoint);
+              print(routePoints.length);
+            });
+
+            mapController.move(newPoint, mapController.camera.zoom);
+          },
+        );
+  }
+
+  void stopTracking() {
+    positionStream?.cancel();
+
+    setState(() {
+      isTracking = false;
+    });
   }
 
   @override
@@ -133,12 +178,18 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (isTracking) {
+                    stopTracking();
+                  } else {
+                    startTracking();
+                  }
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightGreen,
+                  backgroundColor: isTracking ? Colors.red : Colors.lightGreen,
                   foregroundColor: Colors.black,
                 ),
-                child: const Text("GO"),
+                child: Text(isTracking ? "STOP RUN" : "START RUN"),
               ),
             ),
 
