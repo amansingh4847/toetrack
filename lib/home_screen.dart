@@ -52,6 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void startTracking() {
     setState(() {
       isTracking = true;
+      distanceCovered = 0;
+      routePoints.clear();
     });
 
     LocationSettings locationSettings = const LocationSettings(
@@ -65,9 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
             LatLng newPoint = LatLng(position.latitude, position.longitude);
 
             setState(() {
+              updateDistance(newPoint);
+
               currentLocation = newPoint;
               routePoints.add(newPoint);
-              print(routePoints.length);
             });
 
             mapController.move(newPoint, mapController.camera.zoom);
@@ -81,6 +84,22 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isTracking = false;
     });
+  }
+
+  // to update distance
+  void updateDistance(LatLng newPoint) {
+    if (routePoints.isNotEmpty) {
+      LatLng lastPoint = routePoints.last;
+
+      distanceCovered += Geolocator.distanceBetween(
+        lastPoint.latitude,
+        lastPoint.longitude,
+        newPoint.latitude,
+        newPoint.longitude,
+      );
+
+      print("Distance: $distanceCovered");
+    }
   }
 
   @override
@@ -125,15 +144,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     //to map lines
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: routePoints,
-                          strokeWidth: 5,
-                          color: Colors.lightGreen,
-                        ),
-                      ],
-                    ),
+                    if (routePoints.length >= 2)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: routePoints,
+                            strokeWidth: 5,
+                            color: Colors.lightGreen,
+                          ),
+                        ],
+                      ),
 
                     MarkerLayer(
                       markers: [
@@ -163,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Text(
                     "Distance Covered",
@@ -173,8 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 8),
 
                   Text(
-                    "0.00 km",
-                    style: TextStyle(
+                    "${(distanceCovered / 1000).toStringAsFixed(2)} km",
+                    style: const TextStyle(
                       fontSize: 32,
                       color: Colors.lightGreen,
                       fontWeight: FontWeight.bold,
