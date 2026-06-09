@@ -123,6 +123,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.toetrack',
                     ),
+
+                    //to map lines
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: routePoints,
+                          strokeWidth: 5,
+                          color: Colors.lightGreen,
+                        ),
+                      ],
+                    ),
+
                     MarkerLayer(
                       markers: [
                         if (currentLocation != null)
