@@ -11,6 +11,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  LatLng? currentLocation; //this can be null so using ?
+
+  //func banaya to get curr loc everytime the app open or screen get loaded
+  Future<void> getCurrentLocation() async {
+    LocationPermission permission;
+
+    permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+
+    setState(() {
+      currentLocation = LatLng(position.latitude, position.longitude);
+      print(currentLocation);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentLocation();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,10 +76,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.toetrack',
                     ),
+                    MarkerLayer(
+                      markers: [
+                        if (currentLocation != null)
+                          Marker(
+                            point: currentLocation!,
+                            width: 80,
+                            height: 80,
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
-
-
               ),
             ),
 
