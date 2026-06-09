@@ -12,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   LatLng? currentLocation; //this can be null so using ?
+  final MapController mapController = MapController(); //to control the camera on map wrt our live location
 
   //func banaya to get curr loc everytime the app open or screen get loaded
   Future<void> getCurrentLocation() async {
@@ -27,8 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       currentLocation = LatLng(position.latitude, position.longitude);
-      print(currentLocation);
     });
+    mapController.move(currentLocation!, 16, );
   }
 
   @override
@@ -66,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 //using flutter map here
                 child: FlutterMap(
+                  mapController: mapController,
                   options: MapOptions(
                     initialCenter: LatLng(28.6139, 77.2090), // Delhi for now
                     initialZoom: 15,
