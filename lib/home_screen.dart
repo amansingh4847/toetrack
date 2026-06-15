@@ -241,17 +241,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> captureRun() async {
-    print("1");
 
     runImage = await screenshotController.capture();
 
-    print("2");
 
     if (runImage == null) return;
 
     final directory = await getApplicationDocumentsDirectory();
-
-    print("3");
 
     final folder = Directory('${directory.path}/runs');
 
@@ -259,7 +255,6 @@ class _HomeScreenState extends State<HomeScreen> {
       await folder.create(recursive: true);
     }
 
-    print("4");
 
     final file = File(
       '${folder.path}/${DateTime.now().millisecondsSinceEpoch}.png',
@@ -267,9 +262,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await file.writeAsBytes(runImage!);
 
-    print("5");
-
-    print("6");
   }
 
   //for screen shot babay
@@ -326,16 +318,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       Marker(
                         point: currentLocation!,
 
-                        width: 80,
+                        width: 24,
 
-                        height: 80,
+                        height: 22,
 
-                        child: const Icon(
-                          Icons.location_on,
+                        child: Container(
+                          width: 24,
 
-                          color: Colors.red,
+                          height: 24,
 
-                          size: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+
+                            shape: BoxShape.circle,
+
+                            border: Border.all(color: Colors.white, width: 4),
+
+                            boxShadow: [
+                              BoxShadow(color: Colors.black26, blurRadius: 8),
+                            ],
+                          ),
                         ),
                       ),
                   ],

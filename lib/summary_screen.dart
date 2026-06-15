@@ -15,27 +15,22 @@ class SummaryScreen extends StatelessWidget {
   const SummaryScreen({super.key, required this.image, required this.onDone});
 
   Future<void> shareRun() async {
+    print("Share button pressed");
 
-  print("Share button pressed");
+    final directory = await getTemporaryDirectory();
 
-  final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/run.png');
 
-  final file = File(
-    '${directory.path}/run.png',
-  );
+    await file.writeAsBytes(image);
 
-  await file.writeAsBytes(image);
+    print("File created");
 
-  print("File created");
+    await Share.shareXFiles([
+      XFile(file.path),
+    ], text: '🏃 Shared from ToeTrack');
 
-  await Share.shareXFiles(
-    [XFile(file.path)],
-
-    text: '🏃 Shared from ToeTrack',
-  );
-
-  print("Share completed");
-}
+    print("Share completed");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +38,7 @@ class SummaryScreen extends StatelessWidget {
       canPop: false,
 
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-
-          centerTitle: true,
-
-          title: const Text("🏁 Great Run!"),
-        ),
+        appBar: AppBar(automaticallyImplyLeading: false),
 
         body: Padding(
           padding: const EdgeInsets.all(16),
@@ -75,7 +64,10 @@ class SummaryScreen extends StatelessWidget {
 
                 child: ElevatedButton.icon(
                   onPressed: shareRun,
-
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightGreen,
+                    foregroundColor: Colors.black,
+                  ),
                   icon: const Icon(Icons.share),
 
                   label: const Text("Share Run"),
@@ -95,6 +87,10 @@ class SummaryScreen extends StatelessWidget {
 
                     Navigator.pop(context);
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightGreen,
+                    foregroundColor: Colors.black,
+                  ),
 
                   child: const Text("Done"),
                 ),
