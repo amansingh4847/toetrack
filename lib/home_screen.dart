@@ -4,6 +4,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:toetrack/summary_screen.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:toetrack/history_screen.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -238,7 +241,35 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> captureRun() async {
+    print("1");
+
     runImage = await screenshotController.capture();
+
+    print("2");
+
+    if (runImage == null) return;
+
+    final directory = await getApplicationDocumentsDirectory();
+
+    print("3");
+
+    final folder = Directory('${directory.path}/runs');
+
+    if (!await folder.exists()) {
+      await folder.create(recursive: true);
+    }
+
+    print("4");
+
+    final file = File(
+      '${folder.path}/${DateTime.now().millisecondsSinceEpoch}.png',
+    );
+
+    await file.writeAsBytes(runImage!);
+
+    print("5");
+
+    print("6");
   }
 
   //for screen shot babay
@@ -403,13 +434,30 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+
         title: Text(
           'ToeTrack',
+
           style: TextStyle(
             color: Colors.lightGreen,
+
             fontWeight: FontWeight.bold,
           ),
         ),
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+
+            onPressed: () {
+              Navigator.push(
+                context,
+
+                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
