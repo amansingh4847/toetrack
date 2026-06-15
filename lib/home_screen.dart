@@ -24,6 +24,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   double distanceCovered = 0.0;
 
+  Timer? runTimer;
+
+  int elapsedSeconds = 0;
+
+  String smoothedPace = "--:--";
+
+  double nextPaceUpdate = 100;
+
+  void updateSmoothedPace() {
+  smoothedPace = calculatePace();
+}
+
   //func banaya to get curr loc everytime the app open or screen get loaded
   Future<void> getCurrentLocation() async {
     LocationPermission permission;
@@ -53,8 +65,14 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isTracking = true;
       distanceCovered = 0;
+      elapsedSeconds = 0;
       routePoints.clear();
+
+      if (currentLocation != null) {
+        routePoints.add(currentLocation!);
+      }
     });
+    startTimer();
 
     LocationSettings locationSettings = const LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -81,6 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void stopTracking() {
     positionStream?.cancel();
 
+    stopTimer();
+
     setState(() {
       isTracking = false;
     });
@@ -97,9 +117,59 @@ class _HomeScreenState extends State<HomeScreen> {
         newPoint.latitude,
         newPoint.longitude,
       );
+      if (distanceCovered >= nextPaceUpdate) {
 
-      print("Distance: $distanceCovered");
+  updateSmoothedPace();
+
+  nextPaceUpdate += 100;
+}
+
     }
+  }
+
+  //to start the run timmer
+  void startTimer() {
+    runTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        elapsedSeconds++;
+
+      });
+    });
+  }
+
+  void stopTimer() {
+    runTimer?.cancel();
+  }
+
+  String formatTime() {
+    int hours = elapsedSeconds ~/ 3600;
+
+    int minutes = (elapsedSeconds % 3600) ~/ 60;
+
+    int seconds = elapsedSeconds % 60;
+
+    return "${hours.toString().padLeft(2, '0')}:"
+        "${minutes.toString().padLeft(2, '0')}:"
+        "${seconds.toString().padLeft(2, '0')}";
+  }
+
+
+  //for pace
+  String calculatePace() {
+    if (distanceCovered == 0) {
+      return "--:--";
+    }
+
+    double distanceKm = distanceCovered / 1000;
+
+    double paceMinutes = (elapsedSeconds / 60) / distanceKm;
+
+    int minutes = paceMinutes.floor();
+
+    int seconds = ((paceMinutes - minutes) * 60).round();
+
+    return "${minutes.toString().padLeft(2, '0')}:"
+        "${seconds.toString().padLeft(2, '0')}";
   }
 
   @override
@@ -179,26 +249,86 @@ class _HomeScreenState extends State<HomeScreen> {
 
             Container(
               width: double.infinity,
+
               padding: const EdgeInsets.all(16),
+
               decoration: BoxDecoration(
+                color: Colors.grey.shade900,
+
                 borderRadius: BorderRadius.circular(12),
               ),
+
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
                   Text(
-                    "Distance Covered",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                    formatTime(),
 
-                  SizedBox(height: 8),
-
-                  Text(
-                    "${(distanceCovered / 1000).toStringAsFixed(2)} km",
                     style: const TextStyle(
-                      fontSize: 32,
+                      fontSize: 20,
+
                       color: Colors.lightGreen,
+
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                    children: [
+                      // LEFT SIDE
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          const Text(
+                            "Distance",
+
+                            style: TextStyle(fontSize: 16),
+                          ),
+
+                          Text(
+                            "${(distanceCovered / 1000).toStringAsFixed(2)} km",
+
+                            style: const TextStyle(
+                              fontSize: 32,
+
+                              color: Colors.lightGreen,
+
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // RIGHT SIDE
+                      Column(
+                    
+                        children: [
+                          const Text("Pace", style: TextStyle(fontSize: 16)),
+
+                          Text(
+                            smoothedPace,
+
+                            style: const TextStyle(
+                              fontSize: 38,
+
+                              color: Colors.lightGreen,
+
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const Text("min/km"),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
